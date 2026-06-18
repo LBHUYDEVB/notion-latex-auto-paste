@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Notion LaTeX Auto Paste",
+  "version": "0.6.2",
+  "description": "Converts copied LaTeX to Notion's inline equation shortcut when pasted.",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.notion.com/*",
+        "https://notion.so/*",
+        "https://*.notion.so/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["chatgpt-copy.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "Notion LaTeX Auto Paste"
+  }
+}
