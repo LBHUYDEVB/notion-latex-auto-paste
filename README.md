@@ -1,5 +1,7 @@
 # Notion LaTeX Auto Paste
 
+Language: English | [简体中文](README.zh-CN.md)
+
 Notion LaTeX Auto Paste is a small Chrome extension for students and note-takers who copy math-heavy answers into Notion.
 
 It fixes common LaTeX clipboard formats before Notion handles the paste, so copied ChatGPT answers and multiline formulas render as Notion equations with much less manual cleanup.
