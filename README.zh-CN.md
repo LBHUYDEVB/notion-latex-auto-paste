@@ -45,7 +45,7 @@ $$f(\omega) \approx \sum_i c_iB_i(\omega)$$
 
 ## Windows 快速安装
 
-1. 下载 `notion-latex-auto-paste-0.6.2.zip`。
+1. 下载 `notion-latex-auto-paste-0.6.3.zip`。
 2. 右键 ZIP 文件，选择 **全部解压**。
 3. 打开 Chrome，进入 `chrome://extensions`。
 4. 打开 **开发者模式**。

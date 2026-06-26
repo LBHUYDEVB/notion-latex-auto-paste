@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   buildNotionPastePlan,
   findMarkerTextSpan,
+  normalizeFormulaSource,
   splitNotionPasteSegments
 } from "../src/notion-paste-segments.ts";
 
@@ -66,4 +67,15 @@ test("finds a marker split across several DOM text nodes", () => {
 
 test("does not report a partial marker", () => {
   assert.equal(findMarkerTextSpan(["NLTXTEST", "X13"], "NLTXTESTX13X"), undefined);
+});
+
+test("normalizes formula source text for rendered-equation checks", () => {
+  assert.equal(
+    normalizeFormulaSource("$$\n f_r = \\frac{\\rho}{\\pi} \n$$"),
+    normalizeFormulaSource("f_r=\\frac{\\rho}{\\pi}")
+  );
+  assert.equal(
+    normalizeFormulaSource("\\[ I = k_a I_a + k_d I_l \\]"),
+    normalizeFormulaSource("I=k_aI_a+k_dI_l")
+  );
 });

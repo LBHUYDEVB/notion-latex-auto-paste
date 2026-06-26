@@ -45,7 +45,7 @@ Important: Chrome does not allow a GitHub-downloaded extension to install itself
 
 ## Windows Quick Start
 
-1. Download `notion-latex-auto-paste-0.6.2.zip`.
+1. Download `notion-latex-auto-paste-0.6.3.zip`.
 2. Right click the ZIP and choose **Extract All**.
 3. Open `chrome://extensions`.
 4. Enable **Developer mode**.

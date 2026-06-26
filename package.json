@@ -1,13 +1,13 @@
 {
   "name": "notion-latex-paste",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:node": "node --test tests/latex-normalizer.node.test.mjs tests/notion-paste-segments.node.test.mjs"
+    "test:node": "node --experimental-strip-types --test tests/latex-normalizer.node.test.mjs tests/notion-paste-segments.node.test.mjs"
   },
   "devDependencies": {
     "esbuild": "0.25.5",

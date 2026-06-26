@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.3
+
+- Fixed duplicate raw LaTeX text when Notion inserts an equation block but the replacement paste fallback also writes the source formula.
+- Fixed leftover placeholder cleanup after Notion renders a formula but keeps the temporary marker text.
+- Added rendered-formula detection so replacement cleanup follows Notion's actual editor output.
+- Updated the local Node test script and build fallback for environments where TypeScript test imports or the esbuild binary are unavailable.
+
 ## 0.6.2
 
 - Improved marker replacement inside Notion when Notion merges formula placeholders with surrounding text.

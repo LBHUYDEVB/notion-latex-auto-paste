@@ -1,3 +1,5 @@
 node_modules/
 dist/
+release/*-unpacked/
+tmp-release-check-*/
 .DS_Store

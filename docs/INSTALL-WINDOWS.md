@@ -4,7 +4,7 @@ This package cannot install itself automatically because Chrome blocks automatic
 
 Use this safe manual install flow:
 
-1. Download `notion-latex-auto-paste-0.6.2.zip`.
+1. Download `notion-latex-auto-paste-0.6.3.zip`.
 2. Right click the ZIP file.
 3. Choose **Extract All**.
 4. Open Chrome.

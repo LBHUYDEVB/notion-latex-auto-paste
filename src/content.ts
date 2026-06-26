@@ -1,9 +1,18 @@
 import { normalizeLatexForNotion } from "./latex-normalizer";
-import { buildNotionPastePlan, findMarkerTextSpan, type FormulaPlaceholder } from "./notion-paste-segments";
+import { buildNotionPastePlan, findMarkerTextSpan, normalizeFormulaSource, type FormulaPlaceholder } from "./notion-paste-segments";
 
 let redispatchingPaste = false;
 
-document.documentElement.dataset.notionLatexPasteVersion = "0.6.2";
+document.documentElement.dataset.notionLatexPasteVersion = "0.6.3";
+
+interface PasteDispatchOptions {
+  insertFallback?: boolean;
+}
+
+interface RenderedFormulaSnapshot {
+  katexCount: number;
+  texAnnotationCount: number;
+}
 
 window.addEventListener(
   "paste",
@@ -56,6 +65,7 @@ async function pasteWithFormulaPlaceholders(
 ): Promise<void> {
   redispatchingPaste = true;
   let convertedCount = 0;
+  const attemptedMarkers = new Set<string>();
   try {
     dispatchPlainTextPaste(initialTarget, placeholderText);
     await waitForInitialPaste(formulas);
@@ -67,8 +77,10 @@ async function pasteWithFormulaPlaceholders(
           continue;
         }
 
-        dispatchPlainTextPaste(target, formula.formula);
-        if (await waitForMarkerRemoval(formula)) {
+        attemptedMarkers.add(formula.marker);
+        const beforeFormulaPaste = getRenderedFormulaSnapshot();
+        dispatchPlainTextPaste(target, formula.formula, { insertFallback: false });
+        if (await waitForFormulaPasteResult(formula, beforeFormulaPaste)) {
           convertedCount += 1;
           // Notion removes the marker before its equation block has completely
           // settled. Starting the next replacement immediately can steal focus.
@@ -76,11 +88,15 @@ async function pasteWithFormulaPlaceholders(
         }
       } catch (error) {
         console.warn("Notion LaTeX replacement failed", error);
-        await replaceMarkerWithRawFormula(formula);
+        if (attemptedMarkers.has(formula.marker)) {
+          await removeMarkerText(formula);
+        } else {
+          await replaceMarkerWithRawFormula(formula);
+        }
       }
     }
 
-    await removeRemainingMarkers(formulas);
+    await cleanRemainingMarkers(formulas, attemptedMarkers);
     showConvertedToast(convertedCount, formulas.length);
   } finally {
     redispatchingPaste = false;
@@ -106,7 +122,11 @@ async function waitForInitialPaste(formulas: FormulaPlaceholder[]): Promise<void
   }
 }
 
-function dispatchPlainTextPaste(target: Element, text: string): void {
+function dispatchPlainTextPaste(
+  target: Element,
+  text: string,
+  options: PasteDispatchOptions = {}
+): void {
   const clipboardData = new DataTransfer();
   clipboardData.setData("text/plain", text);
   const replacementEvent = new ClipboardEvent("paste", {
@@ -117,7 +137,7 @@ function dispatchPlainTextPaste(target: Element, text: string): void {
   });
 
   const notCancelled = target.dispatchEvent(replacementEvent);
-  if (notCancelled) {
+  if (notCancelled && options.insertFallback !== false) {
     insertPlainTextFallback(text);
   }
 }
@@ -177,17 +197,32 @@ function collectOwnedTextNodes(editable: HTMLElement): Text[] {
   return nodes;
 }
 
-async function waitForMarkerRemoval(formula: FormulaPlaceholder): Promise<boolean> {
-  const deadline = Date.now() + 1200;
+async function waitForFormulaPasteResult(
+  formula: FormulaPlaceholder,
+  beforeFormulaPaste: RenderedFormulaSnapshot
+): Promise<boolean> {
+  const deadline = Date.now() + 2200;
   while (Date.now() < deadline) {
     if (!findMarker(formula.marker)) {
       return true;
     }
+
+    if (hasRenderedFormula(formula.formula, beforeFormulaPaste)) {
+      await removeMarkerText(formula);
+      return true;
+    }
+
     await waitForEditorUpdate(20);
   }
 
-  // Never leave an internal marker in the user's page if Notion rejects the
-  // replacement paste. The raw single-line formula is still the best fallback.
+  // Notion can insert the equation block but leave the selected placeholder
+  // behind. Replacing that leftover marker with raw "$$...$$" duplicates the
+  // formula, so clean the marker after a replacement paste has been attempted.
+  if (hasRenderedFormula(formula.formula, beforeFormulaPaste)) {
+    await removeMarkerText(formula);
+    return true;
+  }
+
   await replaceMarkerWithRawFormula(formula);
   return false;
 }
@@ -200,12 +235,72 @@ async function replaceMarkerWithRawFormula(formula: FormulaPlaceholder): Promise
   }
 }
 
-async function removeRemainingMarkers(formulas: FormulaPlaceholder[]): Promise<void> {
+async function removeMarkerText(formula: FormulaPlaceholder): Promise<boolean> {
+  const target = await selectMarker(formula.marker);
+  if (!target) {
+    return false;
+  }
+
+  document.execCommand("delete", false);
+  await waitForEditorUpdate(40);
+  return !findMarker(formula.marker);
+}
+
+async function cleanRemainingMarkers(
+  formulas: FormulaPlaceholder[],
+  attemptedMarkers: Set<string>
+): Promise<void> {
   for (const formula of formulas) {
-    if (findMarker(formula.marker)) {
+    if (!findMarker(formula.marker)) {
+      continue;
+    }
+
+    if (attemptedMarkers.has(formula.marker)) {
+      await removeMarkerText(formula);
+    } else {
       await replaceMarkerWithRawFormula(formula);
     }
   }
+}
+
+function getRenderedFormulaSnapshot(): RenderedFormulaSnapshot {
+  return {
+    katexCount: document.querySelectorAll(".katex").length,
+    texAnnotationCount: getTexAnnotations().length
+  };
+}
+
+function hasRenderedFormula(
+  formula: string,
+  beforeFormulaPaste: RenderedFormulaSnapshot
+): boolean {
+  const current = getRenderedFormulaSnapshot();
+  if (
+    current.katexCount > beforeFormulaPaste.katexCount ||
+    current.texAnnotationCount > beforeFormulaPaste.texAnnotationCount
+  ) {
+    return true;
+  }
+
+  const expected = normalizeFormulaSource(formula);
+  if (!expected) {
+    return false;
+  }
+
+  for (const annotation of getTexAnnotations()) {
+    if (normalizeFormulaSource(annotation.textContent ?? "") === expected) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function getTexAnnotations(): Element[] {
+  return Array.from(document.querySelectorAll("annotation")).filter((annotation) => {
+    const encoding = annotation.getAttribute("encoding") ?? "";
+    return encoding.toLowerCase().includes("application/x-tex");
+  });
 }
 
 function waitForEditorUpdate(delay: number): Promise<void> {

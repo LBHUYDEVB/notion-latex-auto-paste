@@ -22,7 +22,7 @@ try {
     legalComments: "none"
   });
 } catch (error) {
-  if (error?.code !== "ERR_MODULE_NOT_FOUND") {
+  if (!canBuildWithoutDependencies(error)) {
     throw error;
   }
   await buildWithoutDependencies();
@@ -51,4 +51,13 @@ async function buildWithoutDependencies() {
 
   await writeFile(new URL("content.js", outdir), `(() => {\n${normalizer}\n${segmenter}\n${content}\n})();\n`);
   await writeFile(new URL("chatgpt-copy.js", outdir), `(() => {\n${normalizer}\n${chatgpt}\n})();\n`);
+}
+
+function canBuildWithoutDependencies(error) {
+  return (
+    error?.code === "ERR_MODULE_NOT_FOUND" ||
+    error?.code === "EFTYPE" ||
+    error?.code === "ENOENT" ||
+    error?.code === "EACCES"
+  );
 }

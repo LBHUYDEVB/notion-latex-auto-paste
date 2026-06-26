@@ -70,6 +70,25 @@ export function findMarkerTextSpan(
   };
 }
 
+export function normalizeFormulaSource(value: string): string {
+  let text = value.trim();
+  const delimiterPairs: Array<[string, string]> = [
+    ["$$", "$$"],
+    ["$", "$"],
+    ["\\[", "\\]"],
+    ["\\(", "\\)"]
+  ];
+
+  for (const [open, close] of delimiterPairs) {
+    if (text.startsWith(open) && text.endsWith(close) && text.length >= open.length + close.length) {
+      text = text.slice(open.length, text.length - close.length).trim();
+      break;
+    }
+  }
+
+  return text.replace(/\s+/g, "");
+}
+
 /** Splits normalized Markdown while leaving fenced and inline code untouched. */
 export function splitNotionPasteSegments(input: string): PasteSegment[] {
   const segments: PasteSegment[] = [];

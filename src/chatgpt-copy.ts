@@ -5,7 +5,7 @@ const clipboardPrototype = globalThis.Clipboard?.prototype;
 if (clipboardPrototype) {
   patchWriteText(clipboardPrototype);
   patchWrite(clipboardPrototype);
-  document.documentElement.dataset.notionLatexCopyVersion = "0.6.2";
+  document.documentElement.dataset.notionLatexCopyVersion = "0.6.3";
 }
 
 function patchWriteText(prototype: Clipboard): void {

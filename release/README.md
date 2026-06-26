@@ -1,6 +1,6 @@
 # Release Package
 
-Download `notion-latex-auto-paste-0.6.2.zip`, unzip it, then load the extracted folder in Chrome through `chrome://extensions`.
+Download `notion-latex-auto-paste-0.6.3.zip`, unzip it, then load the extracted folder in Chrome through `chrome://extensions`.
 
 The ZIP contains:
 
