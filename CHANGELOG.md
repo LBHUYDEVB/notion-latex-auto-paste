@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.14
+
+- Added ChatGPT response image copying to rich clipboard content.
+- Preserved copied images when pasting answers into Notion alongside converted LaTeX formulas.
+- Added macOS installation instructions to the distribution package.
+
 ## 0.6.3
 
 - Fixed duplicate raw LaTeX text when Notion inserts an equation block but the replacement paste fallback also writes the source formula.

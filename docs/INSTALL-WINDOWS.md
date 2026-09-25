@@ -4,7 +4,7 @@ This package cannot install itself automatically because Chrome blocks automatic
 
 Use this safe manual install flow:
 
-1. Download `notion-latex-auto-paste-0.6.3.zip`.
+1. Download `notion-latex-auto-paste-0.6.14.zip`.
 2. Right click the ZIP file.
 3. Choose **Extract All**.
 4. Open Chrome.
@@ -12,9 +12,9 @@ Use this safe manual install flow:
 6. Turn on **Developer mode** in the top right.
 7. Click **Load unpacked**.
 8. Select the extracted folder that contains `manifest.json`.
-9. Refresh Notion.
+9. Refresh Notion and ChatGPT.
 
-After that, paste LaTeX or ChatGPT answers into Notion as usual.
+When you click ChatGPT's answer-copy button, the extension copies response text, images, and LaTeX formulas. Paste into Notion to convert formulas while keeping images in the rich clipboard content.
 
 ## Updating
 
